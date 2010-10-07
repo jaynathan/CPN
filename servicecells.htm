@@ -1,0 +1,526 @@
+<html>
+<head>
+    	<!-- JavaScript -->
+
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+	<script type="text/javascript">
+
+		google.load('visualization', '1', { packages: ['table']});
+		google.load("visualization", "1", { packages: ["corechart"] });
+		google.setOnLoadCallback(init);
+
+		var serviceCellData;
+		var serviceCells;
+
+		var audienceStrand = new Array();
+
+		audienceStrand[0] = "Prenatal:Community";
+		audienceStrand[1] = "Birth to 3 Years:Community";
+		audienceStrand[2] = "3 to 5 Years:Community";
+		audienceStrand[3] = "K-5th Grade:Community";
+		audienceStrand[4] = "6-8th Grade:Community";
+		audienceStrand[5] = "9-12th Grade:Community";
+		audienceStrand[6] = "Young Adults:Community";
+		audienceStrand[7] = "Working Adults / Parents:Community";
+		audienceStrand[8] = "Seniors:Community";
+		audienceStrand[9] = "Non-age Specific:Community";
+		audienceStrand[10] = "Prenatal:Education";
+		audienceStrand[11] = "Birth to 3 Years:Education";
+		audienceStrand[12] = "3 to 5 Years:Education";
+		audienceStrand[13] = "K-5th Grade:Education";
+		audienceStrand[14] = "6-8th Grade:Education";
+		audienceStrand[15] = "9-12th Grade:Education";
+		audienceStrand[16] = "Young Adults:Education";
+		audienceStrand[17] = "Working Adults / Parents:Education";
+		audienceStrand[18] = "Seniors:Education";
+		audienceStrand[19] = "Non-age Specific:Education";
+		audienceStrand[20] = "Prenatal:Healthcare";
+		audienceStrand[21] = "Birth to 3 Years:Health";
+		audienceStrand[22] = "3 to 5 Years:Health";
+		audienceStrand[23] = "K-5th Grade:Health";
+		audienceStrand[24] = "6-8th Grade:Health";
+		audienceStrand[25] = "9-12th Grade:Health";
+		audienceStrand[26] = "Young Adults:Health";
+		audienceStrand[27] = "Working Adults / Parents:Health";
+		audienceStrand[28] = "Seniors:Health";
+		audienceStrand[29] = "Non-age Specific:Health";
+		audienceStrand[30] = "Prenatal:Employment";
+		audienceStrand[31] = "Birth to 3 Years:Employment";
+		audienceStrand[32] = "3 to 5 Years:Employment";
+		audienceStrand[33] = "K-5th Grade:Employment";
+		audienceStrand[34] = "6-8th Grade:Employment";
+		audienceStrand[35] = "9-12th Grade:Employment";
+		audienceStrand[36] = "Young Adults:Employment";
+		audienceStrand[37] = "Working Adults / Parents:Employment";
+		audienceStrand[38] = "Seniors:Employment";
+		audienceStrand[39] = "Non-age Specific:Employment";
+		audienceStrand[40] = "Prenatal:Housing";
+		audienceStrand[41] = "Birth to 3 Years:Housing";
+		audienceStrand[42] = "3 to 5 Years:Housing";
+		audienceStrand[43] = "K-5th Grade:Housing";
+		audienceStrand[44] = "6-8th Grade:Housing";
+		audienceStrand[45] = "9-12th Grade:Housing";
+		audienceStrand[46] = "Young Adults:Housing";
+		audienceStrand[47] = "Working Adults / Parents:Housing";
+		audienceStrand[48] = "Seniors:Housing";
+		audienceStrand[49] = "Non-age Specific:Housing";
+		audienceStrand[50] = "Prenatal:Parenting and Families";
+		audienceStrand[51] = "Birth to 3 Years:Parenting and Families";
+		audienceStrand[52] = "3 to 5 Years:Parenting and Families";
+		audienceStrand[53] = "K-5th Grade:Parenting and Families";
+		audienceStrand[54] = "6-8th Grade:Parenting and Families";
+		audienceStrand[55] = "9-12th Grade:Parenting and Families";
+		audienceStrand[56] = "Young Adults:Parenting and Families";
+		audienceStrand[57] = "Working Adults / Parents:Parenting and Families";
+		audienceStrand[58] = "Seniors:Parenting and Families";
+		audienceStrand[59] = "Non-age Specific:Parenting and Families";
+
+		function init(){
+			loadData();
+		}
+
+		function loadData(){
+
+			var queryServices = new google.visualization.Query(
+				'http://spreadsheets0.google.com/a/charlestonpromise.org/tq?range=A1:G2000&headers=1&key=0Ar9laYIP92V2dFpwZXBZN0F1MkNxQnpFT29DQ2dwQmc&gid=0');
+			// Send the query with a callback function.
+			queryStringServices = "SELECT A, B, C, D, E, F";
+			queryServices.setQuery(queryStringServices);
+			queryServices.send(loadServiceCellDetails);
+		}
+
+		function loadServiceCellDetails(response){
+			if (response.isError()) {
+				alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+				return;
+			}
+
+			var data = response.getDataTable();
+
+			var dataGroupOrg = google.visualization.data.group(data, [2,5],[{'column': 0, 'aggregation': countDistinct, 'type': 'number'}]);
+			dataGroupOrg.setColumnLabel(2, 'Number of Organizations');
+
+			var dataGroupService = google.visualization.data.group(data, [2,5], [{'column': 0, 'aggregation': google.visualization.data.count, 'type': 'number'}]);
+			dataGroupService.setColumnLabel(2, 'Number of Services');
+
+			serviceCellData = google.visualization.data.join(dataGroupOrg, dataGroupService, 'inner', [[0,0], [1,1]], [0,1,2], [2]);
+
+			drawVisualization();
+		}
+
+
+		function countDistinct(arr){
+			var a = [];
+			var l = arr.length;
+			for(var i=0; i<l; i++) {
+			  for(var j=i+1; j<l; j++) {
+				// If this[i] is found later in the array
+				if (arr[i] === arr[j])
+				  j = ++i;
+			  }
+			  a.push(this[i]);
+			}
+			return a.length;
+		};
+
+
+        function getSize(value) {
+
+            var val = value * 3;
+
+            if (val > 75)
+                val = 75;
+
+            return val;
+        }
+
+        function loadCellDetailPage(audience, strand)
+        {
+        	window.location.href = 'celldetail2.htm?audience=' + audience + '&strand=' + strand;
+        }
+
+        function getShading(value) {
+
+            if (value >= 20) { return '0000FF'; }
+            else if (value >= 16) { return '3333ff'; }
+            else if (value >= 12) { return '6666ff'; }
+            else if (value >= 8) { return '9999ff'; }
+            else if (value >= 3) { return 'ccccff'; }
+            else if (value >= 1) { return 'eeeeff'; }
+
+            /*
+            blues:
+            0000ff
+            3333ff
+            6666ff
+            9999ff
+            aaaaff
+            ccccff
+            ddddff
+            eeeeff
+            */
+        }
+
+        function getFontColor(value) {
+            if (value >= 20) { return 'white'; }
+            else if (value >= 16) { return 'white'; }
+            else if (value >= 12) { return 'white'; }
+            else if (value >= 8) { return 'black'; }
+            else if (value >= 3) { return 'black'; }
+            else if (value >= 1) { return 'black'; }
+        }
+
+        var chartArray = [];
+
+        function drawVisualization() {
+
+            var x, y;
+            var cellName;
+            var shade;
+            var serviceCount = 0;
+            var organizationCount = 0;
+            var arrayCounter = 0;
+            var audience, strand;
+
+            for (var x = 0; x < 60; x++){
+
+            	d = document.getElementById(audienceStrand[x]);
+            	audience = audienceStrand[x].split(":")[0]; // alert(audience);
+				strand = audienceStrand[x].split(":")[1]; // alert(strand);
+				cellName = audienceStrand[x]; // alert(cellName);
+				var serviceCount, organizationCount;
+
+            	var filteredRows = serviceCellData.getFilteredRows([{column: 0, value: strand},{column: 1, value: audience}]);
+				var view = new google.visualization.DataView(serviceCellData);
+				view.setRows(filteredRows);
+
+				// should always have only one row
+				if(filteredRows.length > 0) {
+
+					var data = new google.visualization.DataTable();
+					data.addColumn('string', 'strand');
+					data.addColumn('number', 'services');
+					data.addRows(1);
+
+					organizationCount = view.getValue(0, 4);
+					serviceCount = view.getValue(0, 5);
+
+					data.setValue(0, 0, cellName);
+                    data.setValue(0, 1, serviceCount);
+
+					document.getElementById(cellName).innerHTML = "orgs: " + organizationCount + "<br>services: " + serviceCount;
+
+					chartArray[arrayCounter] = new google.visualization.PieChart(document.getElementById(cellName));
+					chartArray[arrayCounter].draw(data, { pieSliceText: 'value',
+						pieSliceTextStyle: { color: getFontColor(serviceCount), fontSize: 12 },
+						tooltipTextStyle: { fontSize: 14 },
+						height: getSize(serviceCount),
+						width: getSize(serviceCount),
+						colors: [getShading(organizationCount)],
+						legend: "none",
+						is3D: "true"
+					});
+
+					eval('google.visualization.events.addListener(chartArray[arrayCounter], "select", function() {loadCellDetailPage("' + audience + '", "' + strand + '");} );');
+
+				} else {
+					// document.getElementById(cellName).innerHTML = "--";
+				}
+            }
+        } // end function drawVisualization()
+
+
+    </script>
+
+
+    <style type="text/css">
+        table.sample
+        {
+            border-width: 1px;
+            border-style:solid;
+            border-color:black;
+            border-collapse:collapse;
+            background-color:rgb(255, 255, 255);
+        }
+        table.sample th
+        {
+            width: 75px;
+            height: 75px;
+            border-width: 1px;
+            padding: 1px;
+            border-style: solid;
+            border-color: gray;
+            background-color: rgb(255, 255, 255);
+        }
+        table.sample td
+        {
+            width: 75px;
+            height: 75px;
+            border-width: 1px;
+            padding: 1px;
+            border-style: solid;
+            border-color: gray;
+            background-color: rgb(255, 255, 255);
+            text-align: center;
+            font-size: 12pt;
+            vertical-align: center;
+        }
+
+        </style>
+        <link rel="stylesheet" href="css/lightwindow.css" type="text/css" media="screen" />
+</head>
+<body>
+    <table class="sample">
+        <tr>
+            <th>&nbsp;</th>
+            <th>
+                Prenatal
+            </th>
+            <th>
+                Birth to 3 Years
+            </th>
+            <th>
+                3 to 5 Years
+            </th>
+            <th>
+                K-5th Grade
+            </th>
+            <th>
+                6-8th Grade
+            </th>
+            <th>
+                9-12th Grade
+            </th>
+            <th>
+                Young Adults
+            </th>
+            <th>
+                Working Adults / Parents
+            </th>
+            <th>
+                Seniors
+            </th>
+            <th>
+                Non-age Specific
+            </th>
+        </tr>
+        <tr>
+            <td>
+                Community
+            </td>
+            <td>
+                <div title="cell_1_1" id="Prenatal:Community"></div>
+            </td>
+            <td>
+            	<div title="cell_1_2" id="Birth to 3 Years:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_3" id="3 to 5 Years:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_4" id="K-5th Grade:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_5" id="6-8th Grade:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_6" id="9-12th Grade:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_7" id="Young Adults:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_8" id="Working Adults / Parents:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_9" id="Seniors:Community"></div>
+            </td>
+            <td>
+                <div title="cell_1_10" id="Non-age Specific:Community"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Education
+            </td>
+            <td>
+                <div title="cell_2_1" id="Prenatal:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_2" id="Birth to 3 Years:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_3" id="3 to 5 Years:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_4" id="K-5th Grade:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_5" id="6-8th Grade:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_6" id="9-12th Grade:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_7" id="Young Adults:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_8" id="Working Adults / Parents:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_9" id="Seniors:Education"></div>
+            </td>
+            <td>
+                <div title="cell_2_10" id="Non-age Specific:Education"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Employment
+            </td>
+            <td>
+                <div title="cell_3_1" id="Prenatal:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_2" id="Birth to 3 Years:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_3" id="3 to 5 Years:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_4" id="K-th Grade:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_5" id="6-8th Grade:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_6" id="9-12th Grade:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_7" id="Young Adults:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_8" id="Working Adults / Parents:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_9" id="Seniors:Employment"></div>
+            </td>
+            <td>
+                <div title="cell_3_10" id="Non-age Specific:Employment"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Health
+            </td>
+            <td>
+                <div title="cell_4_1" id="Prenatal:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_2" id="Birth to 3 Years:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_3" id="3 to 5 Years:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_4" id="K-5th Grade:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_5" id="6-8th Grade:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_6" id="9-12th Grade:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_7" id="Young Adults:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_8" id="Working Adults / Parents:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_9" id="Seniors:Health"></div>
+            </td>
+            <td>
+                <div title="cell_4_10" id="Non-age Specific:Health"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Housing
+            </td>
+            <td>
+                <div title="cell_5_1" id="Prenatal:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_2" id="Birth to 3 Years:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_3" id="3 to 5 Years:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_4" id="K-5th Grade:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_5" id="6-8th Grade:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_6" id="9-12th Grade:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_7" id="Young Adults:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_8" id="Working Adults / Parents:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_9" id="Seniors:Housing"></div>
+            </td>
+            <td>
+                <div title="cell_5_10" id="Non-age Specific:Housing"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Parenting and Families
+            </td>
+            <td>
+                <div title="cell_6_1" id="Prenatal:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_2" id="Birth to 3 Years:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_3" id="3 to 5 Years:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_4" id="K-5th Grade:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_5" id="6-8th Grade:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_6" id="9-12th Grade:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_7" id="Young Adults:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_8" id="Working Adults / Parents:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_9" id="Seniors:Parenting and Families"></div>
+            </td>
+            <td>
+                <div title="cell_6_10" id="Non-age Specific:Parenting and Families"></div>
+            </td>
+        </tr>
+    </table>
+    <p>
+        <div id="message" />
+    </p>
+    <p>
+        <div id="test1" />
+        <div id="test2" />
+    </p>
+</body>
+</html>

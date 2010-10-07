@@ -1,0 +1,124 @@
+<!--
+  copyright (c) 2009 Google inc.
+
+  You are free to copy and use this sample.
+  License can be found here: http://code.google.com/apis/ajaxsearch/faq/#license
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>
+      Google Visualization API Sample
+    </title>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load('visualization', '1', {packages: ['table']});
+    </script>
+    <script type="text/javascript">
+
+    var isFirstTime = true;
+    var options = {'showRowNumber': true};
+    var queryInput;
+
+    function sendAndDraw() {
+
+	    var queryServices = new google.visualization.Query(
+	        'http://spreadsheets0.google.com/a/charlestonpromise.org/tq?range=A1:G1500&headers=1&key=0Ar9laYIP92V2dFpwZXBZN0F1MkNxQnpFT29DQ2dwQmc&gid=0');
+
+		// Send the query with a callback function.
+		queryStringServices = "SELECT A, B, C, D, E, F";
+
+		queryServices.setQuery(queryStringServices);
+		queryServices.send(drawServiceTable);
+
+    }
+
+
+    function drawServiceTable(response){
+		if (response.isError()) {
+			alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+			return;
+		}
+
+		var data = response.getDataTable();
+
+		var dataGroupOrg = google.visualization.data.group(data, [2,5],
+            [{'column': 0, 'aggregation': countDistinct, 'type': 'number'}]);
+        dataGroupOrg.setColumnLabel(2, 'Number of Organizations');
+
+        var dataGroupService = google.visualization.data.group(data, [2,5],
+            [{'column': 0, 'aggregation': google.visualization.data.count, 'type': 'number'}]);
+		dataGroupService.setColumnLabel(2, 'Number of Services');
+
+
+        var dataJoined = google.visualization.data.join(dataGroupOrg, dataGroupService, 'inner', [[0,0], [1,1]], [0,1,2], [2]);
+        // dataJoined.setColumnProperty(5, 'label', 'count');
+        // dataJoined.setColumns();
+
+		var view = new google.visualization.DataView(dataJoined);
+
+		// filter example
+		// view.setRows(dataJoined.getFilteredRows([{column: 0, value: 'Community'},{column: 1, value: '6-8th Grade'}]));
+
+		var filteredRows = dataJoined.getFilteredRows([{column: 0, value: 'Community'},{column: 1, value: '6-8th Grade'}]);
+
+		for(var x = 0; x < filteredRows.length; x++){
+			alert(dataJoined.getValue(filteredRows[x], 2) + dataJoined.getValue(filteredRows[x], 3));
+		}
+
+		view.hideColumns([0,1]);
+		// alert(view);
+
+		drawTable('serviceDescriptionsTable', view);
+    }
+
+
+	function countDistinct(arr){
+		var a = [];
+		var l = arr.length;
+		for(var i=0; i<l; i++) {
+		  for(var j=i+1; j<l; j++) {
+			// If this[i] is found later in the array
+			if (arr[i] === arr[j])
+			  j = ++i;
+		  }
+		  a.push(this[i]);
+		}
+		return a.length;
+	};
+
+
+    function drawTable(tableName, data){
+
+		var view = new google.visualization.DataView(data);
+		// view.setColumns([0,1,2,3]);
+		// view.hideColumns([1]);
+
+		var tableServiceDescriptions = new google.visualization.Table(document.getElementById(tableName));
+		tableServiceDescriptions.draw(view, {'showRowNumber': false});
+    }
+
+    google.setOnLoadCallback(sendAndDraw);
+
+
+    </script>
+  </head>
+<body style="font-family: Arial; border: 0 none;">
+
+<table style='width: 100%;'>
+  <tr style='font-size: 20px;'>
+    <td>Service Description</td>
+  </tr>
+  <tr>
+    <!--td style="width: 50%; padding: 10px; vertical-align: top;">
+    	<div id="table"></div>
+    </td-->
+    <td style="width: 50%; padding: 10px; vertical-align: top;">
+    	<div id="serviceDescriptionsTable"></div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

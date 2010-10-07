@@ -1,0 +1,70 @@
+<html>
+<head>
+
+ <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+
+
+	<script type="text/javascript">
+
+	function getURLParam(strParamName){
+	  var strReturn = "";
+	  var strHref = window.location.href;
+	  if ( strHref.indexOf("?") > -1 ){
+		var strQueryString = strHref.substr(strHref.indexOf("?")).toLowerCase();
+		var aQueryString = strQueryString.split("&");
+		for ( var iParam = 0; iParam < aQueryString.length; iParam++ ){
+		  if (
+	aQueryString[iParam].indexOf(strParamName.toLowerCase() + "=") > -1 ){
+			var aParam = aQueryString[iParam].split("=");
+			strReturn = aParam[1];
+			break;
+		  }
+		}
+	  }
+	  return unescape(strReturn);
+	}
+
+
+
+// To see the data that this visualization uses, browse to
+// http://spreadsheets.google.com/pub?key=rYQm6lTXPH8dHA6XGhJVFsA
+var query = new google.visualization.Query(
+    'http://spreadsheets0.google.com/a/charlestonpromise.org/tq?range=A1:G498&headers=1&key=0Ar9laYIP92V2dFpwZXBZN0F1MkNxQnpFT29DQ2dwQmc&gid=0');
+
+function sendAndDraw() {
+  // Send the query with a callback function.
+  query.send(handleQueryResponse);
+}
+
+function handleQueryResponse(response) {
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  data = response.getDataTable();
+  var table = new google.visualization.Table(document.getElementById('querytable'));
+  table.draw(data, {'showRowNumber': false});
+  if (isFirstTime) {
+  init();
+  }
+}
+
+function setQuery(queryString) {
+  // Query language examples configured with the UI
+  query.setQuery(queryString);
+  sendAndDraw();
+  queryInput.value = queryString;
+}
+
+
+</script>
+
+
+</head>
+<body>
+
+<div id="querytable"></div>
+
+</body>
+
+</html>
